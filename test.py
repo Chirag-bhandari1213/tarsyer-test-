@@ -1,28 +1,50 @@
 import cv2
-haar_cascade = 'cars.xml'
-video = 'cars_on_highway (1080p).mp4'
-      
-cap = cv2.VideoCapture(video)
-car_cascade = cv2.CascadeClassifier(haar_cascade)
 
-# reads frames from a video
-ret, frames = cap.read()
-        
-# convert frames to gray scale 
-gray = cv2.cvtColor(frames, cv2.COLOR_BGR2GRAY)
-        
-# Detects cars of different sizes in the input image
-cars = car_cascade.detectMultiScale(gray, 1.1, 1)
+# Path to the Haar cascade XML file for vehicle detection
+haar_cascade_path = '/Users/chiragbhandari/Downloads/tarsyer/cars.xml'
 
-# To draw a rectangle in each cars
-for (x,y,w,h) in cars:
-  cv2.rectangle(frames,(x,y),(x+w,y+h),(0,0,255),2)
-    
-# Display frames in a window 
-cv2.imshow('video', frames)
+# Path to the input videoq
+video_path = '/Users/chiragbhandari/Downloads/tarsyer/cars_on_highway (1080p).mp4'
 
-cnt = 0
-for (x,y,w,h) in cars:
-    cv2.rectangle(frames,(x,y),(x+w,y+h),(0,0,255),2)
-    cnt += 1
-print(cnt, " cars found")
+# Load the Haar cascade classifier for vehicle detection
+vehicle_cascade = cv2.CascadeClassifier(haar_cascade_path)
+
+# Open the video file
+cap = cv2.VideoCapture(video_path)
+
+# Initialize vehicle count
+vehicle_count = 0
+
+while True:
+    # Read frames from the video
+    ret, frame = cap.read()
+
+    if not ret:
+        break
+
+    # Convert the frame to grayscale
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # Perform vehicle detection
+    vehicles = vehicle_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+    # Draw rectangles around the detected vehicles
+    for (x, y, w, h) in vehicles:
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+    # Update the vehicle count
+    vehicle_count += len(vehicles)
+
+    # Display the frame with detected vehicles
+    cv2.imshow("Vehicle Detection", frame)
+
+    # Exit the loop if 'q' is pressed
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+# Release the video capture
+cap.release()
+cv2.destroyAllWindows()
+
+# Print the total vehicle count
+print("Total vehicles detected:", vehicle_count)
